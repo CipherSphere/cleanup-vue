@@ -3,10 +3,10 @@
 const fs = require('fs');
 const path = require('path');
 
-// List of items to delete (relative to the project root)
 const itemsToDelete = [
   '/src/assets/logo.svg',
-  '/src/icons/', // Directory to delete
+  '/src/assets/base.css',
+  '/src/components/icons', 
   '/src/components/HelloWorld.vue',
   '/src/components/TheWelcome.vue',
   '/src/components/WelcomeItem.vue',
@@ -14,13 +14,11 @@ const itemsToDelete = [
   '/src/views/HomeView.vue',
 ];
 
-// File to clear (relative to the project root)
 const fileToClear = '/src/assets/main.css';
+const routerFilePath = '/src/router/index.js';
 
-// Base path of your Vue project (current working directory)
 const basePath = process.cwd();
 
-// Function to delete files and directories
 function cleanVueProject() {
   itemsToDelete.forEach((item) => {
     const fullPath = path.join(basePath, item);
@@ -28,11 +26,9 @@ function cleanVueProject() {
       if (fs.existsSync(fullPath)) {
         const stats = fs.statSync(fullPath);
         if (stats.isDirectory()) {
-          // Use fs.rmSync for directories
           fs.rmSync(fullPath, { recursive: true, force: true });
           console.log(`Deleted directory: ${item}`);
         } else {
-          // Use fs.unlinkSync for files
           fs.unlinkSync(fullPath);
           console.log(`Deleted file: ${item}`);
         }
@@ -44,7 +40,6 @@ function cleanVueProject() {
     }
   });
 
-  // Clear the contents of the CSS file
   const cssFilePath = path.join(basePath, fileToClear);
   try {
     if (fs.existsSync(cssFilePath)) {
@@ -56,7 +51,18 @@ function cleanVueProject() {
   } catch (err) {
     console.error(`Error clearing CSS file: ${err.message}`);
   }
+
+  const routerPath = path.join(basePath, routerFilePath);
+  try {
+    if (fs.existsSync(routerPath)) {
+      fs.writeFileSync(routerPath, 'import { createRouter, createWebHistory } from "vue-router";\n\nconst routes = [];\n\nconst router = createRouter({\n  history: createWebHistory(process.env.BASE_URL),\n  routes,\n});\n\nexport default router;');
+      console.log(`Removed all routes from: ${routerFilePath}`);
+    } else {
+      console.warn(`Router file does not exist: ${routerFilePath}`);
+    }
+  } catch (err) {
+    console.error(`Error clearing router file: ${err.message}`);
+  }
 }
 
-// Run the cleanup function
 cleanVueProject();
